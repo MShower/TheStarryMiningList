@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "${id}",
-  "version": "${version}",
-  "name": "${name}",
+  "id": "the-starry-mininglist",
+  "version": "1.3.8.1",
+  "name": "TheStarryMiningList",
   "description": "record mining",
   "authors": [
     "crackun24",
@@ -23,7 +23,7 @@
     "thestarrymininglist.json"
   ],
   "depends": {
-    "minecraft": "${minecraft_dependency}"
+    "minecraft": ">=1.21.7"
   },
   "permissions": [
     "configread",

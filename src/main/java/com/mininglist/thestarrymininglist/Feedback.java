@@ -5,48 +5,47 @@ import com.mininglist.thestarrymininglist.dataType.FeedBackJson;
 import com.mininglist.thestarrymininglist.dataType.Msg;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.NetworkInterface;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 
-public class Feedback extends Thread {//发送反馈
-    private final String FEED_BACK_URL = "https://api.starrylandmc.xyz/send_feedback";
-    private String modType;//模组的类型
-    private boolean mCloseState;//主线程的关闭状态
-    private String server_id;//服务器的标识
+public class Feedback extends Thread {
+    private final String modType;
+    private boolean mCloseState;
+    private String server_id;
     public static final Logger LOGGER = LogManager.getLogger();
 
     private synchronized boolean getCloseState() {
         return this.mCloseState;
     }
 
-    private void genServerId()//获取网卡的 mac 码
+    private void genServerId()
     {
         try {
-            // 获取所有网络接口
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
-                // 获取该网络接口的MAC地址
                 byte[] mac = networkInterface.getHardwareAddress();
                 if (mac != null) {
-                    // 将MAC地址字节数组转换为可读格式
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < mac.length; i++) {
                         sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
                     }
                     this.server_id = sb.toString();
-                    break;//不需要再循环
+                    break;
                 }
             }
             if (this.server_id.isEmpty()) {
-                this.server_id = "unknown";//设置为未知的mac码
+                this.server_id = "unknown";
             }
         } catch (Exception e) {
             LOGGER.info(Msg.ANSI_RED + "发送遥测数据失败" + Msg.ANSI_RESET);
@@ -60,21 +59,9 @@ public class Feedback extends Thread {//发送反馈
             FeedBackJson json_obj = new FeedBackJson(this.server_id, System.currentTimeMillis() / 1000, modType);
             String req_body = gson.toJson(json_obj);//构建json 字符串
 
-            URL url = new URL(this.FEED_BACK_URL);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-
-
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = req_body.getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-
-            int responseCode = connection.getResponseCode();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"));
+            String FEED_BACK_URL = "https://api.starrylandmc.xyz/send_feedback";
+            URL url = URL.of(URI.create(FEED_BACK_URL), null);
+            BufferedReader in = getBufferedReader(url, req_body);
             String inputLine;
             StringBuilder content = new StringBuilder();
             while ((inputLine = in.readLine()) != null) {
@@ -84,6 +71,24 @@ public class Feedback extends Thread {//发送反馈
         } catch (Exception e) {
             LOGGER.info(Msg.ANSI_RED + "发送遥测数据失败" + Msg.ANSI_RESET);
         }
+    }
+
+    private static @NotNull BufferedReader getBufferedReader(URL url, String req_body) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+
+
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = req_body.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+
+        int responseCode = connection.getResponseCode();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"));
+        return in;
     }
 
     @Override

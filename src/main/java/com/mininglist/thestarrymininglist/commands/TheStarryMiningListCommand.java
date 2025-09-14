@@ -10,6 +10,8 @@ import net.minecraft.scoreboard.ScoreboardDisplaySlot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.util.Objects;
+
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -19,7 +21,6 @@ import static com.mininglist.thestarrymininglist.TheStarryMiningList.mScoreboard
 public class TheStarryMiningListCommand {
     public static boolean isScoreboardVisible = true;
 
-    // 注册命令以切换计分板的全局可见/隐藏状态
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("theStarryMiningList")
                 .then(argument("mode", BoolArgumentType.bool())
@@ -32,19 +33,17 @@ public class TheStarryMiningListCommand {
                             } else {
                                 ret_msg = "权限不足";
                             }
-                            context.getSource().getPlayer().sendMessage(Text.of(ret_msg), true);
+                            Objects.requireNonNull(context.getSource().getPlayer()).sendMessage(Text.of(ret_msg), true);
                             return 1;
                         }))
         );
     }
-
-    //注册控制单个玩家设置计分板是否显示的指令
     public static void registerSingleCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("theStarryMiningDisplay")
                 .then(argument("mode", BoolArgumentType.bool())
                         .executes(context -> {
-                            ServerPlayerEntity player = context.getSource().getPlayer();//获取玩家对象
-                            if (player == null)//判断执行命令的对象是否为玩家
+                            ServerPlayerEntity player = context.getSource().getPlayer();
+                            if (player == null)
                             {
                                 return 1;
                             }
@@ -63,35 +62,19 @@ public class TheStarryMiningListCommand {
 
     public static void isVisible() {
         if (isScoreboardVisible) {
-            //#if MC<12002
-            //$$ mScoreboard.setObjectiveSlot(1, mScoreboardObj); // 显示计分板
-            //#else
             mScoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, mScoreboardObj);
-            //#endif
 
         } else {
-            //#if MC<12002
-            //$$ mScoreboard.setObjectiveSlot(1, null); // 隐藏计分板
-            //#else
             mScoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, null);
-            //#endif
         }
     }
 
-    //设置单个玩家的计分板显示状态
     public static void setSinglePlayerDisplayState(ServerPlayerEntity player, boolean state) {
         if (state) {
-            //#if MC<12002
-            //$$ player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(1, mScoreboardObj));//发送关闭玩家的计分板的数据包
-            //#else
-            player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, mScoreboardObj));//发送关闭玩家的计分板的数据包
-            //#endif
-        } else {
-            //#if MC<12002
-            //$$ player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(1, null));//发送关闭玩家的计分板的数据包
-            //#else
-            player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, null));//发送关闭玩家的计分板的数据包
-            //#endif
+            player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, mScoreboardObj));
+        }
+        else {
+            player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(ScoreboardDisplaySlot.SIDEBAR, null));
         }
     }
 }

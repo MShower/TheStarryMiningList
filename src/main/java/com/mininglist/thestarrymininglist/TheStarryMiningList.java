@@ -7,11 +7,8 @@ import com.mininglist.thestarrymininglist.event.HookPlayerBreakBlockEvent;
 import com.mininglist.thestarrymininglist.function.CreateScoreboard;
 
 import net.fabricmc.api.ModInitializer;
-//#if MC < 11900
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-//#else
-//$$ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-//#endif
+
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -51,18 +48,8 @@ public class TheStarryMiningList implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             feedback.close();//关闭反馈服务
         });
-
-        //#if MC<11900
-        // 注册命令以切换计分板的可见/隐藏状态
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> TheStarryMiningListCommand.register(dispatcher));
-        // 注册设置计分板显示名称的命令
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> setScoreboardDisplayNameCommand.register(dispatcher));
-        // 注册设置玩家自己的计分板显示的命令
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> TheStarryMiningListCommand.registerSingleCommand(dispatcher));
-        //#else
-        //$$ CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> TheStarryMiningListCommand.register(dispatcher));
-        //$$ CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> setScoreboardDisplayNameCommand.register(dispatcher));
-        //$$ CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> TheStarryMiningListCommand.registerSingleCommand(dispatcher));
-        //#endif
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> TheStarryMiningListCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> setScoreboardDisplayNameCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> TheStarryMiningListCommand.registerSingleCommand(dispatcher));
     }
 }

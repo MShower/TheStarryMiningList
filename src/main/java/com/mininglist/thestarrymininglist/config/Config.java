@@ -9,46 +9,46 @@ import java.io.*;
 
 //配置类
 public class Config {
-    public static final String CONFIG_FILE_NAME = "miningList.properties";//配置文件的名称
+    public static final String CONFIG_FILE_NAME = "miningList.properties";
     public Properties mProp;
     public static String key_display_name = "ScoreboardDisplayName";
     File file;
 
     private void CreateDefaultConfigFile(File file) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file)))//创建新的文件写入对象
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file)))
         {
             String DEFAULT_CONFIG_DATA =
                     "ScoreboardDisplayName = MiningList\n" +
                             "ScoreboardName = MiningList";
-            writer.write(DEFAULT_CONFIG_DATA);//写入默认的配置文件信息
+            writer.write(DEFAULT_CONFIG_DATA);
         } catch (Exception e) {
             TheStarryMiningList.LOGGER.warn("Config file write error.");
         }
     }//创建默认的配置文件
 
-    public Config(final String filePath) {//构造函数,传入配置文件的地址
-        file = new File(filePath + "\\" + CONFIG_FILE_NAME);//拼接成正确的配置文件路径
-        if (!file.exists())//判断配置文件是否存在
+    public Config(final String filePath) {
+        file = new File(filePath + "\\" + CONFIG_FILE_NAME);
+        if (!file.exists())
         {
             try {
-                CreateDefaultConfigFile(file);//如果配置文件不存在,则直接创建默认的配置文件
+                CreateDefaultConfigFile(file);
             } catch (Exception e) {
                 TheStarryMiningList.LOGGER.warn("warn");
             }
         }
 
-        this.mProp = new Properties();//创建新的properties文件读取对象
+        this.mProp = new Properties();
 
         try (Reader reader = new InputStreamReader(Files.newInputStream(file.toPath()),
-                StandardCharsets.UTF_8)) {//创建输入流,使用utf-8的字符集
-            this.mProp.load(reader);//加载配置文件
+                StandardCharsets.UTF_8)) {
+            this.mProp.load(reader);
         } catch (Exception e) {
             TheStarryMiningList.LOGGER.warn("warn");
         }
     }
 
-    public String GetValue(final String key) { //获取配置文件对应的值
-        return this.mProp.getProperty(key); //返回值
+    public String GetValue(final String key) {
+        return this.mProp.getProperty(key);
     }
 
     public void UpdateValue(final String key, final String val) throws IOException {

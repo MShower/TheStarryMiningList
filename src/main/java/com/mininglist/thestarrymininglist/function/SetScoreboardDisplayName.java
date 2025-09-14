@@ -17,23 +17,19 @@ import net.minecraft.text.Text;
 
 import net.minecraft.text.Text;
 
+import java.util.Objects;
+
 public class SetScoreboardDisplayName {
     public static void set(String scoreboardName, String displayName, ServerCommandSource source) throws CommandSyntaxException {
         Scoreboard scoreboard = source.getServer().getScoreboard();
         ScoreboardObjective objective = scoreboard.getNullableObjective(scoreboardName);
         if (objective != null) {
-            //#if MC<11900
-            //$$ objective.setDisplayName(new LiteralText(displayName));
-            //#else
             objective.setDisplayName(Text.literal(displayName));
-            //#endif
         }
-        //#if MC<12002
-        //$$ scoreboard.setObjectiveSlot(1, objective);
-        //#else
         scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, objective);
-        //#endif
 
-        source.getPlayer().sendMessage(Text.of("计分板 [ " + scoreboardName + " ] 显示名称已更改为: [ " + displayName + " ]"), true);
+        Objects.requireNonNull(source.getPlayer())
+                .sendMessage(Text.of("计分板 [ " + scoreboardName + " ] 显示名称已更改为: [ " + displayName + " ]"),
+                        true);
     }
 }
